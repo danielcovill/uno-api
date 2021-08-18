@@ -2,15 +2,24 @@
   "name": "uno-api",
   "version": "1.0.0",
   "description": "Uno game API",
-  "main": "api/index.js",
+  "main": "index.js",
   "dependencies": {
+    "@koa/cors": "^3.1.0",
     "@koa/router": "^10.0.0",
-    "koa": "^2.13.1"
+    "dotenv": "^10.0.0",
+    "joi": "^17.4.2",
+    "koa": "^2.13.1",
+    "koa-bodyparser": "^4.3.0",
+    "koa-compress": "^5.0.1",
+    "koa-helmet": "^6.1.0",
+    "koa-logger": "^3.2.1",
+    "koa-router": "^10.0.0",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node api/index.js"
+    "dev": "node index.js"
   },
   "repository": {
     "type": "git",
