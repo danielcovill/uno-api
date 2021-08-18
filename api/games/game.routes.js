@@ -8,9 +8,11 @@ module.exports = Router => {
     });
 
     router
-        .get('/:gameId', controller.getOne)
-        .get('/', controller.getAll)
-        .post('/', controller.createOne);
+        .get('/:gameId', controller.getGame)
+        .get('/', controller.getAllGames)
+        .post('/', controller.createGame)
+
+        .post('/:gameId/deck', controller.pullCard);
 
     return router;
 };

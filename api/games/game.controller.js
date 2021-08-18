@@ -8,7 +8,7 @@ const generateId = require('../../utils/generateId.util');
 const db = {
     games: [
         {
-            gameId: 'bff28903-042e-47c2-b9ee-07c3954989ec',
+            id: 'bff28903-042e-47c2-b9ee-07c3954989ec',
             name: 'Ronald\'s game',
             status: 'Not Started',
             deckCount: 98,
@@ -16,7 +16,7 @@ const db = {
             players: [{ seatPosition: 1, name: 'Anderson', cardCount: 0 }]
         },
         {
-            gameId: 'aff28903-072e-47c2-b9ee-07c3954989ec',
+            id: 'aff28903-072e-47c2-b9ee-07c3954989ec',
             name: 'silly game',
             status: 'In Progress',
             deckCount: 86,
@@ -24,7 +24,7 @@ const db = {
             players: [{ seatPosition: 1, name: 'Anderson', cardCount: 10 }, { seatPosition: 2, name: 'Sarah', cardCount: 2 }]
         },
         {
-            gameId: 'cff28903-042e-47c2-b9ee-07c3954989ec',
+            id: 'cff28903-042e-47c2-b9ee-07c3954989ec',
             name: 'No girls allowed',
             status: 'In Progress',
             deckCount: 79,
@@ -34,7 +34,7 @@ const db = {
     ],
 };
 
-exports.getOne = ctx => {
+exports.getGame = ctx => {
     const { gameId } = ctx.params;
     const game = db.games.find(game => game.id === gameId);
     ctx.assert(game, 404, "The requested game doesn't exist");
@@ -42,7 +42,7 @@ exports.getOne = ctx => {
     ctx.body = game;
 };
 
-exports.getAll = async ctx => {
+exports.getAllGames = async ctx => {
     if (db.games.length > 0) {
         ctx.status = 200;
         ctx.body = db.games;
@@ -52,7 +52,7 @@ exports.getAll = async ctx => {
     }
 };
 
-exports.createOne = async ctx => {
+exports.createGame = async ctx => {
     const { name, playerCount } = ctx.request.body;
     ctx.assert(name, 400, 'The game info is malformed!');
     ctx.assert(playerCount, 400, 'The game info is malformed!');
@@ -65,4 +65,12 @@ exports.createOne = async ctx => {
     db.games.push(newGame);
     ctx.status = 201;
     ctx.body = { gameId: id };
+};
+
+exports.pullCard = async ctx => {
+    const { gameId } = ctx.params;
+    const game = db.games.find(game => game.id === gameId);
+    ctx.assert(game, 404, "The requested game doesn't exist");
+    ctx.status = 200;
+    ctx.body = game.deckCount;
 };
