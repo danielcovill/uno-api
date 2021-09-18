@@ -1,0 +1,544 @@
+{
+    "openapi": "3.0.2",
+    "info": {
+        "title": "Uno Game API",
+        "version": "1.0"
+    },
+    "servers": [
+        {
+            "url": "https://api.server.test/v1"
+        }
+    ],
+    "components": {
+        "schemas": {
+            "Game": {
+                "type": "object",
+                "properties": {
+                    "gameId": {
+                        "description": "The identifier for this game",
+                        "type": "string",
+                        "nullable": false
+                    },
+                    "name": {
+                        "description": "The name given this game on creation",
+                        "type": "string",
+                        "maxLength": 50,
+                        "nullable": false
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "Not Started",
+                            "In Progress",
+                            "Win",
+                            "Loss"
+                        ]
+                    },
+                    "deckCount": {
+                        "type": "integer",
+                        "description": "The count of cards remaining in the deck",
+                        "minimum": 1
+                    },
+                    "discardPile": {
+                        "description": "The cards in the discard pile",
+                        "type": "array",
+                        "items": {
+                            "index": "integer",
+                            "$ref": "#components/schemas/Card"
+                        },
+                        "minimum": 1
+                    },
+                    "players": {
+                        "description": "The players that are currently in the game",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#components/schemas/Player"
+                        }
+                    }
+                }
+            },
+            "Player": {
+                "type": "object",
+                "properties": {
+                    "seatPosition": {
+                        "type": "integer",
+                        "nullable": false
+                    },
+                    "name": {
+                        "type": "string",
+                        "nullable": false
+                    },
+                    "id": {
+                        "type": "string",
+                        "nullable": false
+                    },
+                    "cardCount": {
+                        "type": "integer",
+                        "nullable": false,
+                        "minimum": 0
+                    },
+                    "status": {
+                        "type": "string",
+                        "nullable": false
+                    }
+                }
+            },
+            "Card": {
+                "type": "object",
+                "properties": {
+                    "value": {
+                        "type": "string",
+                        "enum": [
+                            "0",
+                            "1",
+                            "2",
+                            "3",
+                            "4",
+                            "5",
+                            "6",
+                            "7",
+                            "8",
+                            "9",
+                            "Draw 2",
+                            "Skip",
+                            "Reverse",
+                            "Draw 4",
+                            "Wild"
+                        ],
+                        "nullable": false
+                    },
+                    "color": {
+                        "type": "string",
+                        "enum": [
+                            "red",
+                            "blue",
+                            "green",
+                            "yellow",
+                            "wild"
+                        ],
+                        "nullable": false
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "name": {
+                "type": "http",
+                "scheme": "basic"
+            }
+        },
+        "responses": {
+            "UnauthorizedError": {
+                "description": "Authentication information is missing or invalid",
+                "headers": {
+                    "WWW_Authenticate": {
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "InternalServerError": {
+                "description": "Unexpected internal error"
+            }
+        }
+    },
+    "security": [
+        {
+            "basicAuth": []
+        }
+    ],
+    "paths": {
+        "/users": {
+            "get": {
+                "summary": "Gets a list of users in the system",
+                "security": [],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "users": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Creates a new user",
+                "security": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "userName": {
+                                        "type": "string",
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User Created"
+                    },
+                    "409": {
+                        "description": "A user already exists with these credentials"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
+                    }
+                }
+            }
+        },
+        "/games": {
+            "get": {
+                "summary": "Returns a list of the available games.",
+                "security": [],
+                "responses": {
+                    "200": {
+                        "description": "OK - A list of games",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "games": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "gameId": {
+                                                        "description": "The identifier for this game",
+                                                        "type": "string",
+                                                        "nullable": false
+                                                    },
+                                                    "name": {
+                                                        "description": "The name given this game on creation",
+                                                        "type": "string",
+                                                        "maxLength": 50,
+                                                        "nullable": false
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Adds a new game to the system and returns the ID of the game created.",
+                "parameters": [
+                    {
+                        "name": "playerCount",
+                        "in": "query",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "description": "The number of players who will be joining the game. Game will not start until all are in the game.",
+                        "example": 2,
+                        "schema": {
+                            "type": "number",
+                            "minimum": 2,
+                            "maximum": 4,
+                            "nullable": false
+                        }
+                    },
+                    {
+                        "name": "gameName",
+                        "in": "query",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "description": "The name of the game to be created",
+                        "example": "My new game!",
+                        "schema": {
+                            "type": "string",
+                            "minLength": 2,
+                            "maxLength": 50,
+                            "nullable": false
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created - A new game has been created with the returned ID",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "description": "Alphanumeric identifier of the created game.",
+                                    "example": {
+                                        "gameId": "abc123"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - There was a problem with one of your parameters as submitted",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "description": "The invalid parameter",
+                                        "type": "string",
+                                        "example": "playerCount: must be a whole number"
+                                    },
+                                    "description": "Message describing parameter error"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
+                    }
+                }
+            }
+        },
+        "/games/{gameId}": {
+            "get": {
+                "summary": "Get the game status from the perspective of the currently authenticated user.",
+                "parameters": [
+                    {
+                        "name": "gameId",
+                        "in": "path",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "description": "The id of the game that was returned when it was created.",
+                        "example": "abc123",
+                        "schema": {
+                            "type": "string",
+                            "nullable": false
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK - Returns the game status.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Game"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request  - There was a problem with one of your parameters as submitted",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "description": "The invalid parameter",
+                                        "example": "gameId: must be an integer"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - The game is full or already in progress"
+                    },
+                    "404": {
+                        "description": "Not Found - No such game with this identifier"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
+                    }
+                }
+            },
+            "put": {
+                "summary": "Joins a game",
+                "parameters": [
+                    {
+                        "name": "gameId",
+                        "in": "path",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "description": "The id of the game that was returned when it was created.",
+                        "example": "abc123",
+                        "schema": {
+                            "type": "string",
+                            "nullable": false
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK - Game joined"
+                    },
+                    "404": {
+                        "description": "Game not found"
+                    },
+                    "409": {
+                        "description": "Game full or priavate"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
+                    }
+                }
+            }
+        },
+        "/games/{gameId}/deck": {
+            "post": {
+                "summary": "Returns a card pulled from the deck and into your hand.",
+                "responses": {
+                    "200": {
+                        "description": "OK - Card has been added to your deck",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Card"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
+                    }
+                }
+            }
+        },
+        "/games/{gameId}/hand": {
+            "get": {
+                "summary": "Retrieve a list of the cards in your hand.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Card"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Play a card from your hand.",
+                "requestBody": {
+                    "description": "The card that is to be played. Must be a card that exists in your hand.",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Card"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "No Content - Card successfully played"
+                    },
+                    "400": {
+                        "description": "Bad Request - There was a problem with one of your parameters as submitted",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "description": "The invalid parameter",
+                                        "type": "string",
+                                        "example": "value: must be an accepted card value 0-9, draw 2, draw 4, skip, or reverse."
+                                    },
+                                    "description": "Message describing parameter error"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict - This is not a valid card to play"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
+                    }
+                }
+            }
+        },
+        "/games/{gameId}/calls": {
+            "put": {
+                "summary": "Calls UNO for yourself, or calls a player for failing to say 'Uno!'",
+                "parameters": [
+                    {
+                        "name": "callFor",
+                        "in": "query",
+                        "description": "To call for yourself, use your own seatPosition. To call another player who has failed to say 'Uno!', use that player's seatPosition",
+                        "example": "0",
+                        "schema": {
+                            "type": "integer",
+                            "nullable": false
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content - call has succeeded"
+                    },
+                    "400": {
+                        "description": "Bad Request - invalid parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "description": "The invalid parameter",
+                                        "type": "string",
+                                        "example": "seatPosition: must be a whole number"
+                                    },
+                                    "description": "Message describing parameter error"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found - seat position does not exist"
+                    },
+                    "409": {
+                        "description": "Conflict - call is not successful. It is either in violation of the rules, or another player has already called 'Uno!'"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
+                    }
+                }
+            }
+        }
+    }
+}
