@@ -1,6 +1,7 @@
 'use strict';
 
 const generateId = require('../../utils/generateId.util');
+const auth = require('basic-auth');
 
 /**
  * Mock database, replace this with db models import, required to perform query to database.
@@ -35,6 +36,8 @@ const db = {
 };
 
 exports.getGame = ctx => {
+    const user = auth(ctx.request);
+    ctx.assert(user, 401, "Unauthorized - invalid credentials");
     const { gameId } = ctx.params;
     const game = db.games.find(game => game.id === gameId);
     ctx.assert(game, 404, "The requested game doesn't exist");
