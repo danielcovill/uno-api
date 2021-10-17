@@ -2,6 +2,8 @@
 
 const generateId = require('../../utils/generateId.util');
 const auth = require('basic-auth');
+const config = require('../../config/components/database.config');
+const { Pool } = require('pg');
 
 /**
  * Mock database, replace this with db models import, required to perform query to database.
@@ -35,14 +37,23 @@ const db = {
     ],
 };
 
-exports.getGame = ctx => {
-    const user = auth(ctx.request);
-    ctx.assert(user, 401, "Unauthorized - invalid credentials");
+const pool = new Pool(config.database);
+
+exports.getGame = async ctx => {
+    // const user = auth(ctx.request);
+    // ctx.assert(user, 401, "Unauthorized - invalid credentials");
     const { gameId } = ctx.params;
-    const game = db.games.find(game => game.id === gameId);
-    ctx.assert(game, 404, "The requested game doesn't exist");
+    if(isNaN(gameId)) {
+        ctx.status = 400;
+        ctx.body = "gameId is invalid";
+        return;
+    }
+    const queryString = 'SELECT * FROM game WHERE id=$1';
+    const vars = [ gameId ];
+    const response = await pool.query(queryString, vars);
+    ctx.assert(response.rowCount === 1, 404, "The requested game doesn't exist");
     ctx.status = 200;
-    ctx.body = game;
+    ctx.body = response.rows[0];
 };
 
 exports.getAllGames = async ctx => {
