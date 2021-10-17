@@ -5,6 +5,7 @@ CREATE TABLE public.game (
 	"name" varchar NOT NULL,
 	status varchar NOT NULL,
 	seat_count int4 NOT NULL,
+	created_date timestamptz NOT NULL,
 	CONSTRAINT game_pk PRIMARY KEY (id)
 );
 
